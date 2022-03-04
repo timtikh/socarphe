@@ -4,16 +4,17 @@ Dockerfile
 FROM python:3.8
 
 # установка рабочей директории в контейнере
-WORKDIR /code
+WORKDIR /socarphe/server
 
 # копирование файла зависимостей в рабочую директорию
 COPY requirements.txt .
 
 # установка зависимостей
 RUN pip install -r requirements.txt
+RUN pip install vk_api
 
 # копирование содержимого локальной директории src в рабочую директорию
 COPY src/ .
 
 # команда, выполняемая при запуске контейнера
-CMD [ "python", "./server.py" ]
+CMD [ "python", "./ParsingVkApi4Telegram.py" ]
