@@ -11,10 +11,11 @@ COPY requirements.txt .
 
 # установка зависимостей
 RUN pip install -r requirements.txt
-RUN pip install vk_api
+RUN python3 -m pip install vk_api
+RUN pip install fuzzywuzzy
 
 # копирование содержимого локальной директории src в рабочую директорию
 COPY src/ .
 
 # команда, выполняемая при запуске контейнера
-CMD [ "python", "./ParsingVkApi4Telegram.py" ]
+CMD [ "python", "./ParsingVkApiRelis.py" ]

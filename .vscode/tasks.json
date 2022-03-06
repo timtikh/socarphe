@@ -19,7 +19,7 @@
 				"docker-build"
 			],
 			"python": {
-				"file": "server/ParsingVkApi4Telegram.py"
+				"file": "server/ParsingVkApiRelis.py"
 			}
 		}
 	]
