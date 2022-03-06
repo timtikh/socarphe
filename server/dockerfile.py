@@ -1,4 +1,4 @@
-Dockerfile
+
 
 # установка базового образа (host OS)
 FROM python:3.8
