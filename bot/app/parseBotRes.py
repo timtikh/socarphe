@@ -6,11 +6,14 @@ with open("settings.txt") as file:
     data = file.readlines()
     LOGIN = data[0].strip()
     PASSWORD = data[1].strip()
-    depths = data[3].strip().split(',')
+    depths = list(map(int, data[3].strip().split(',')))
+    # depths = data[3].strip().split(',')
+    counters = list(map(int, data[4].strip().split(',')))
 
 vkBot = VKparserBot(login=LOGIN, password=PASSWORD)
 wfh = wordFindHelper()
 depth_depends_on_the_status = {"default": depths[0], "prime": depths[1], "superPrime": depths[2]}
+count_of_friends = {"default": counters[0], "prime": counters[1], "superPrime": counters[2]}
 
 
 def service(users_list, user_status):
@@ -33,10 +36,17 @@ def service(users_list, user_status):
                     with open("resultQueue.csv", "a", newline='') as file:
                         writer = csv.writer(file)
                         res = ""
-                        # result = [(97985038, 1), (132000826, 1), (210557817, 2), (225425107, 1)]
+                        result.sort(key=lambda x: -x[1])
+                        how_many_friends = count_of_friends[user_status]
+                        # result = [(int(<vk_group1_id>), <int(number_of_matches_in_group1)>), 
+                        #           (int(<vk_group2_id>), <int(number_of_matches_in_group2)>), ...]
                         for resEl in result:
-                            res += str(resEl[0]) + "-" + str(resEl[1]) + ";"
-                        print([el[0], tg_id, user_status, res[:-1]])
+                            if how_many_friends > 0:
+                                res += str(resEl[0]) + "-" + str(resEl[1]) + ";"
+                                how_many_friends -= 1
+                            else:
+                                break
+                        # print([el[0], tg_id, user_status, res[:-1]])
                         writer.writerow([el[0], tg_id, user_status, res[:-1]])
                     # print("result_users:", vkBot.result_users)
                     # return vk_user_id["object_id"]
