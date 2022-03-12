@@ -26,14 +26,14 @@ def readFile():
     with open("tgusersStatus.csv") as file:
         csvReader = csv.reader(file)
         for row in csvReader:
-            tgUsers[int(row[0])] = {"condition": row[1], "keywords": row[2].split(";")}
+            tgUsers[int(row[0])] = {"status": row[1], "condition": row[2], "keywords": row[3].split(";")}
 
 
 def writeFile():
     with open("tgusersStatus.csv", "w", newline='') as file:
         csvWriter = csv.writer(file)
         for userInfo in tgUsers.items():
-            csvWriter.writerow([str(userInfo[0]), str(userInfo[1]["condition"]), ";".join(userInfo[1]["keywords"])])
+            csvWriter.writerow([str(userInfo[0]), str(userInfo[1]["status"]), str(userInfo[1]["condition"]), ";".join(userInfo[1]["keywords"])])
 
 
 def addArequestToTheQueue(finderId, user_id, user_status, keywords, link):
@@ -93,7 +93,8 @@ def send_welcome(message):
     user_id = message.from_user.id
     user_status = registrationOrAuthorisation(user_id)
     if user_id not in tgUsers:
-        tgUsers[user_id] = {"condition": "chatting", "keywords": ""}
+        tgUsers[user_id] = {"status": "default", "condition": "chatting", "keywords": ""}
+    user_status = tgUsers[user_id]["status"]
     user_condition = tgUsers[user_id]["condition"]
     user_keywords = tgUsers[user_id]["keywords"]
     #                user_id, user_name, status, user_condition, keywords):
@@ -118,7 +119,14 @@ def send_welcome(message):
         result = "Введи ключевые слова через запятую, по которым хочешь осуществить поиск"
         bot.send_message(message.from_user.id, result, parse_mode='Markdown')
     elif splited_text[0] == "/changeStatus" and len(splited_text) == 1:
-        pass
+        if userClass.status == "default":
+            userClass.status = "prime"
+            now_status = "Премиум"
+        else:
+            userClass.status = "default"
+            now_status = "Обычный"
+        result = f'Ты поменял свой статус на *"{now_status}"*'
+        bot.send_message(message.from_user.id, result, parse_mode='Markdown')
 
     else:
         result = "Извини, я вряд ли могу как-то ответить тебе🙁"
@@ -152,7 +160,7 @@ def send_welcome(message):
         # print(message.reply_to_message)
         # print("---------------")
 
-    tgUsers[userClass.id] = {"condition": userClass.condition, "keywords": userClass.keywords}
+    tgUsers[userClass.id] = {"status": userClass.status, "condition": userClass.condition, "keywords": userClass.keywords}
     # print(userClass.keywords)
     writeFile()
 
