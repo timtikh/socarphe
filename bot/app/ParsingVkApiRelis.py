@@ -13,6 +13,15 @@ class VKparserBot:
         self.vk_session = vk_api.VkApi(login, password)
         self.vk_session.auth()
         self.vk = self.vk_session.get_api()
+        
+        self.similarityOfWords = 75
+        self.user_friend_list = []
+        self.users_dict = dict()
+        self.keywords = []
+        self.result_users = dict()
+
+        self.close_words = dict()
+        self.added_words = []
 
     def prepareForParsing(self):
         self.similarityOfWords = 75
