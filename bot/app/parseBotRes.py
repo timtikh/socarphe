@@ -31,6 +31,7 @@ def service(users_list, user_status):
                 vk_user_id = vkBot.vk.utils.resolveScreenName(
                     screen_name=link.replace("https://vk.com/", "", 1).replace("vk.com/", "", 1))
                 if vk_user_id["type"] == "user":
+                    vkBot.prepareForParsing()
                     vkBot.findUserFriends(user_id=vk_user_id["object_id"], counter=0, depth=depth, keywords=keywords)
                     result = []
                     for vkItEl in vkBot.result_users.items():
