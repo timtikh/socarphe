@@ -36,7 +36,7 @@ if __name__ == "__main__":
                         user_vk_info = el.split("-")
                         vk_id, match = user_vk_info[0], user_vk_info[1]
                         if counter > 0:
-                            text += f"Совпадений: {match}\nСслыка: https://vk.com/id{vk_id}\n\n"
+                            text += "Совпадений: {}\nСслыка: https://vk.com/id{}\n\n".format(match, vk_id)
                             counter += 1
                         else:
                             break
