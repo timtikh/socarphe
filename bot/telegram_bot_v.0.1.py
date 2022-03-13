@@ -140,7 +140,7 @@ def send_welcome(message):
                 result = 'Найдены схожие слова, введи их, если хочешь расширить поиск, иначе отправь "Нет"\nСхожие слова: {}'.format(', '.join(wordFH.added_words))
                 userClass.condition = "addingKeywords"
             else:
-                result = "Осталось только отправить мне ссылку на страницу ВК, откуда начнешь поиск. Приватные профили и ссылки на группу не подходят."
+                result = "Осталось только отправить мне ссылку на страницу ВК, откуда начнешь поиск."
                 userClass.condition = "enteringId"
         elif userClass.condition == "addingKeywords":
             if text.lower() != "нет":
@@ -148,7 +148,7 @@ def send_welcome(message):
                     userClass.keywords.append(word)
                 userClass.keywords = list(set(userClass.keywords))
 
-            result = "Осталось только отправить мне ссылку на страницу ВК, откуда начнешь поиск. Приватные профили и ссылки на группу не подходят."
+            result = "Осталось только отправить мне ссылку на страницу ВК, откуда начнешь поиск."
             userClass.condition = "enteringId"
         elif userClass.condition == "enteringId":
             result = "Ты добавлен в очередь. Загляни сюда позже"
