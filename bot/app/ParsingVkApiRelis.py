@@ -1,4 +1,6 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# vim:fileencoding=utf-8
 from fuzzywuzzy import fuzz
 import vk_api
 import csv
