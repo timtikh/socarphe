@@ -34,9 +34,9 @@ if __name__ == "__main__":
                     text = "*Найдены нужные пользователи!*\n\n\n"
                     for el in users_res_list:
                         user_vk_info = el.split("-")
-                        vk_id, match = user_vk_info[0], user_vk_info[1]
+                        vk_id, match, first_name, last_name = user_vk_info[0], user_vk_info[1], user_vk_info[2], user_vk_info[3]
                         if counter > 0:
-                            text += "Совпадений: {}\nСслыка: https://vk.com/id{}\n\n".format(match, vk_id)
+                            text += "{} {}\nСовпадений: {}\nСслыка: https://vk.com/id{}\n\n".format(first_name, last_name, match, vk_id)
                             counter += 1
                         else:
                             break
