@@ -31,10 +31,11 @@ def service(users_list, user_status):
                 vk_user_id = vkBot.vk.utils.resolveScreenName(
                     screen_name=link.replace("https://vk.com/", "", 1).replace("vk.com/", "", 1))
                 if vk_user_id["type"] == "user":
+                    vkBot.prepareForParsing()
                     vkBot.findUserFriends(user_id=vk_user_id["object_id"], counter=0, depth=depth, keywords=keywords)
                     result = []
                     for vkItEl in vkBot.result_users.items():
-                        result.append((vkItEl[0], vkItEl[1]["count"]))
+                        result.append((vkItEl[0], vkItEl[1]["count"], vkItEl[1]["first_name"], vkItEl[1]["last_name"]))
                     with open("resultQueue.csv", "a", newline='') as file:
                         writer = csv.writer(file)
                         res = ""
@@ -42,12 +43,15 @@ def service(users_list, user_status):
                         how_many_friends = count_of_friends[user_status]
                         # result = [(int(<vk_group1_id>), <int(number_of_matches_in_group1)>),
                         #           (int(<vk_group2_id>), <int(number_of_matches_in_group2)>), ...]
+                        print("time_id", el[0])
                         for resEl in result:
                             if how_many_friends > 0:
-                                res += str(resEl[0]) + "-" + str(resEl[1]) + ";"
+                                res += str(resEl[0]) + "-" + str(resEl[1]) + "-" + str(resEl[2]) + "-" + str(resEl[3]) + ";"
                                 how_many_friends -= 1
                             else:
                                 break
+                        print(tg_id, user_status, res[:-1])
+                        print("--------------------------\n\n")
                         # print([el[0], tg_id, user_status, res[:-1]])
                         writer.writerow([el[0], tg_id, user_status, res[:-1]])
                     # print("result_users:", vkBot.result_users)
