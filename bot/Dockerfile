@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:latest
 
 
 RUN apt-get update -y && \
@@ -11,6 +11,7 @@ WORKDIR /
 RUN pip3 install -r requirements.txt
 RUN python3 -m pip install vk_api
 RUN python3 -m pip install fuzzywuzzy
+RUN pip3 install pyTelegramBotAPI==3.6.6
 
 COPY . /
 
