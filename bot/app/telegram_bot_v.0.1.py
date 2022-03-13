@@ -137,8 +137,7 @@ def send_welcome(message):
             wordFH = wordFindHelper()
             wordFH.needToAddWords(userClass.keywords)
             if len(wordFH.added_words) > 0:
-                result = f'Найдены схожие слова, введи их, если хочешь расширить поиск, иначе отправь "Нет"\n' \
-                         f"Схожие слова: {', '.join(wordFH.added_words)}"
+                result = 'Найдены схожие слова, введи их, если хочешь расширить поиск, иначе отправь "Нет"\nСхожие слова: {}'.format(', '.join(wordFH.added_words))
                 userClass.condition = "addingKeywords"
             else:
                 result = "Осталось только отправить мне ссылку на страницу ВК, откуда начнешь поиск."
