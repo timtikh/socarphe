@@ -127,7 +127,7 @@ def send_welcome(message):
         else:
             userClass.status = "default"
             now_status = "Обычный"
-        result = f'Ты поменял свой статус на *"{now_status}"*'
+        result = 'Ты поменял свой статус на *"{}"*'.format(now_status)
         bot.send_message(message.from_user.id, result, parse_mode='Markdown')
 
     else:
