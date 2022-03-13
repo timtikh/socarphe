@@ -57,11 +57,13 @@ class VKparserBot:
                     for user_friend in self.user_friend_list["items"]:
                         counter_limiter += 1
                         user_info = self.vk.users.get(user_id=user_friend, extended=1)
+                        '''
                         try:
                             print(f"{counter_limiter}. {user_friend}({user_id})", user_info[0]["first_name"], user_info[0]["last_name"],
                                   f"({counter}/{depth})")
                         except UnicodeEncodeError as e:
                             print(e)
+                        '''
 
                         # users_dict = {user: [list_of_his_"parent"]}
                         if user_friend in self.users_dict:
