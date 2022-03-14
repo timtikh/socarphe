@@ -102,8 +102,6 @@ def send_welcome(message):
     #                user_id, user_name, status, user_condition, keywords):
     userClass = User(user_id, user_name, user_status, user_condition, user_keywords)
 
-    # print(f'{time.ctime()} | @{user_name}({user_id}): "{text}"')
-    # print(message, "\n")
     splited_text = text.split(" ", 1)
     if splited_text[0] == "/start" and len(splited_text) == 1:
         result = "Добро пожаловать в *Socarphe.*\n\n" \
@@ -158,11 +156,9 @@ def send_welcome(message):
             userClass.condition = "chatting"
 
         bot.send_message(message.from_user.id, result, parse_mode='Markdown')
-        # print(message.reply_to_message)
-        # print("---------------")
+        
 
     tgUsers[userClass.id] = {"status": userClass.status, "condition": userClass.condition, "keywords": userClass.keywords}
-    # print(userClass.keywords)
     writeFile()
 
 
