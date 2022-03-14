@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fileencoding=utf-8
+
 from fuzzywuzzy import fuzz
 import vk_api
 import csv
@@ -13,17 +14,20 @@ class VKparserBot:
         self.vk_session = vk_api.VkApi(login, password)
         self.vk_session.auth()
         self.vk = self.vk_session.get_api()
-        
-        self.similarityOfWords = 75
+
+        self.start_user_id = 0
+        self.similarityOfWords = 80
         self.user_friend_list = []
         self.users_dict = dict()
         self.keywords = []
         self.result_users = dict()
+        self.sex_dict = {0: "не указан", 1: "мужской", 2: "женский"}
 
         self.close_words = dict()
         self.added_words = []
 
     def prepareForParsing(self):
+        self.start_user_id = 0
         self.similarityOfWords = 75
         self.user_friend_list = []
         self.users_dict = dict()
@@ -48,7 +52,15 @@ class VKparserBot:
             with open("words.csv", "w", encoding="windows-1251") as file:
                 pass
 
-    def findUserFriends(self, user_id=None, counter=0, depth=2, keywords=None, limiter=100):
+    def checkIsStartAccountClosed(self):
+        try:
+            startUserInfo = self.vk.friends.get(user_id=self.start_user_id, order="hints")
+            return True
+        except Exception:
+            # Аккаунт приватный или удален
+            return False
+
+    def findUserFriends(self, user_id=None, counter=0, depth=2, keywords=None, limiter=100, first_name=None, last_name=None):
         if user_id is None:
             raise Exception("user_id must int")
         if keywords is None:
@@ -58,7 +70,8 @@ class VKparserBot:
                 if user_id not in self.users_dict:
                     self.users_dict[user_id] = []
 
-                self.groupAnalysis(user_id, keywords=keywords)
+                if user_id != self.start_user_id:
+                    self.groupAnalysis(user_id, keywords=keywords, first_name=first_name, last_name=last_name)
 
                 if counter < depth:
                     # Getting a list of friends
@@ -67,13 +80,12 @@ class VKparserBot:
                     for user_friend in self.user_friend_list["items"]:
                         counter_limiter += 1
                         user_info = self.vk.users.get(user_id=user_friend, extended=1)
-                        '''
-                        try:
-                            print(f"{counter_limiter}. {user_friend}({user_id})", user_info[0]["first_name"], user_info[0]["last_name"],
-                                  f"({counter}/{depth})")
-                        except UnicodeEncodeError as e:
-                            print(e)
-                        '''
+                        # try:
+                        #     print(f"{counter_limiter}. {user_friend}({user_id})", user_info[0]["first_name"], user_info[0]["last_name"],
+                        #           f"({counter}/{depth})")
+                        # except UnicodeEncodeError as e:
+                        #     print(e)
+
 
                         # users_dict = {user: [list_of_his_"parent"]}
                         if user_friend in self.users_dict:
@@ -82,11 +94,11 @@ class VKparserBot:
                             self.users_dict[user_friend] = [user_id]
 
                             # There is no user, so we haven't processed it yet
-                            self.findUserFriends(user_id=user_friend, counter=counter + 1, depth=depth, keywords=keywords, limiter=limiter)
+                            self.findUserFriends(user_id=user_friend, counter=counter + 1, depth=depth, keywords=keywords, limiter=limiter, first_name=user_info[0]["first_name"], last_name=user_info[0]["last_name"])
                         if counter_limiter >= limiter:
                             break
             except vk_api.exceptions.ApiError as e:
-                print(e)
+                # print(e)
                 # the user has been deleted or banned
                 pass
 
@@ -101,7 +113,7 @@ class VKparserBot:
                 counter += 1
         return counter
 
-    def groupAnalysis(self, user_id, keywords=None, max_keyword_counter=0, max_groups_len=0, max_counter=100):
+    def groupAnalysis(self, user_id, keywords=None, max_keyword_counter=0, max_groups_len=0, max_counter=100, first_name=None, last_name=None):
         if keywords is None:
             raise Exception("keywords mas be list of set")
         keywords = list(keywords)
@@ -140,6 +152,8 @@ class VKparserBot:
                     break
 
             if result["count"] > max_groups_len:
+                result["first_name"] = first_name
+                result["last_name"] = last_name
                 self.result_users[user_id] = result
 
         except Exception as e:
