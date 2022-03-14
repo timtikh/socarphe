@@ -39,7 +39,6 @@ while flag:
         while True:
             with open("captcha.txt", "r") as file:
                 data = file.readlines()
-                # print("data:", data)
                 entered_captcha = "qq"
                 if len(data) != 0:
                     entered_captcha = data[0]
@@ -92,19 +91,13 @@ def service(users_list, user_status):
                         how_many_friends = count_of_friends[user_status]
                         # result = [(int(<vk_group1_id>), <int(number_of_matches_in_group1)>),
                         #           (int(<vk_group2_id>), <int(number_of_matches_in_group2)>), ...]
-                        # print("time_id", el[0])
                         for resEl in result:
                             if how_many_friends > 0:
                                 res += str(resEl[0]) + "-" + str(resEl[1]) + "-" + str(resEl[2]) + "-" + str(resEl[3]) + ";"
                                 how_many_friends -= 1
                             else:
                                 break
-                        # print(tg_id, user_status, res[:-1])
-                        # print("--------------------------\n\n")
-                        # print([el[0], tg_id, user_status, res[:-1]])
                         writer.writerow([el[0], tg_id, user_status, res[:-1]])
-                    # print("result_users:", vkBot.result_users)
-                    # return vk_user_id["object_id"]
                 else:
                     # Ссылка не на пользователя ВК
                     with open("resultQueue.csv", "a", newline='') as file:
@@ -167,7 +160,6 @@ if __name__ == "__main__":
             users_list = sorted(list(users["prime"].items()), key=lambda x: x[0])
             while len(users_list) > 0:
                 service(users_list, "prime")
-                # print(1, service(users_list, "prime"))
                 del users["prime"][users_list[0][0]]
                 try:
                     del users_list[0]
@@ -178,7 +170,6 @@ if __name__ == "__main__":
             users_list = sorted(list(users["default"].items()), key=lambda x: x[0])
             while len(users_list) > 0:
                 service(users_list, "default")
-                # print(0, service(users_list, "default"))
                 del users["default"][users_list[0][0]]
                 try:
                     del users_list[0]
