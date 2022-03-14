@@ -12,7 +12,7 @@ from ParsingVkApiRelis import *
 # для полноценной работы бота нужно запустить три программы:
 # parseBotRes.py
 # SendResults.py
-# telegram_bot_v.0.1.py
+# telegram_bot.py
 
 class User:
     def __init__(self, user_id, user_name, status, user_condition, keywords):
@@ -89,6 +89,12 @@ def registrationOrAuthorisation(user_id):
     return user_status
 
 
+def enter_captcha(users, text):
+    for user_id in users:
+        bot.send_message(user_id, text)
+    return
+
+
 @bot.message_handler(content_types=["text"])
 def send_welcome(message):
     text = message.text
@@ -102,7 +108,9 @@ def send_welcome(message):
     user_keywords = tgUsers[user_id]["keywords"]
     #                user_id, user_name, status, user_condition, keywords):
     userClass = User(user_id, user_name, user_status, user_condition, user_keywords)
-    
+
+    # print(f'{time.ctime()} | @{user_name}({user_id}): "{text}"')
+    # print(message, "\n")
     start = "\033[1m"
     end = "\033[0;0m"
     imgg = 'https://i.ibb.co/8xRzcrF/Screenshot-2022-03-13-at-19-29-26.png'
@@ -139,8 +147,14 @@ def send_welcome(message):
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
         buttons = ["Команды", "Начать поиск"]
         keyboard.add(*buttons)
-        bot.send_message(message.from_user.id,result, parse_mode='Markdown', reply_markup=keyboard)
-
+        bot.send_message(message.from_user.id, result, parse_mode='Markdown', reply_markup=keyboard)
+    elif splited_text[0].lower() in ["каптча", "капча"]:
+        try:
+            captcha = splited_text[1]
+            with open("captcha.txt", "w") as file:
+                file.write(captcha)
+        except IndexError:
+            captcha = None
     else:
         result = "Извини, я вряд ли могу как-то ответить тебе🙁"
         if userClass.condition == "enteringKeywords":
