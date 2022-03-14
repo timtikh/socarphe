@@ -5,13 +5,14 @@
 import csv
 import time
 import telebot
+from telebot import types
 from ParsingVkApiRelis import *
 
 
 # для полноценной работы бота нужно запустить три программы:
 # parseBotRes.py
 # SendResults.py
-# telegram_bot_v.0.1.py
+# telegram_bot.py
 
 class User:
     def __init__(self, user_id, user_name, status, user_condition, keywords):
@@ -88,6 +89,12 @@ def registrationOrAuthorisation(user_id):
     return user_status
 
 
+def enter_captcha(users, text):
+    for user_id in users:
+        bot.send_message(user_id, text)
+    return
+
+
 @bot.message_handler(content_types=["text"])
 def send_welcome(message):
     text = message.text
@@ -104,23 +111,32 @@ def send_welcome(message):
 
     # print(f'{time.ctime()} | @{user_name}({user_id}): "{text}"')
     # print(message, "\n")
+    start = "\033[1m"
+    end = "\033[0;0m"
+    imgg = 'https://i.ibb.co/8xRzcrF/Screenshot-2022-03-13-at-19-29-26.png'
     splited_text = text.split(" ", 1)
     if splited_text[0] == "/start" and len(splited_text) == 1:
-        result = "Добро пожаловать в *Socarphe.*\n\n" \
-                 "• Хочешь посмотреть все доступные команды? Отправь мне */info*.\n" \
-                 "• Хочешь начать поиск человека? Отправь мне */find*\n" \
-                 "• Хочешь поменять свой статус? Отправь мне */changeStatus*"
-        bot.send_message(message.from_user.id, result, parse_mode='Markdown')
-    elif splited_text[0] == "/info" and len(splited_text) == 1:
-        result = "• Хочешь посмотреть все доступные команды? Отправь мне */info*.\n" \
-                 "• Хочешь начать поиск человека? Отправь мне */find*\n" \
-                 "• Хочешь поменять свой статус? Отправь мне */changeStatus*"
-        bot.send_message(message.from_user.id, result, parse_mode='Markdown')
-    elif splited_text[0] == "/find" and len(splited_text) == 1:
+        result = f"Добро пожаловать в Socarphe[.]({imgg}) \n\n" \
+                 "• Хочешь посмотреть все доступные команды? Выбери *\"Команды\"*\n\n" \
+                 "• Хочешь начать поиск человека? Выбери *\"Начать поиск\"*\n\n" \
+                 f"• Хочешь поменять свой статус? Выбери *\"Изменить статус\"*\n"
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        buttons = ["Команды", "Начать поиск", "Изменить статус"]
+        keyboard.add(*buttons)
+        bot.send_message(message.from_user.id, result, parse_mode='Markdown', reply_markup=keyboard)
+    elif (splited_text[0] == "Команды" or splited_text[0] == "/info") and len(splited_text) == 1:
+        result = "• Хочешь посмотреть все доступные команды? Выбери *\"Команды\"*\n\n" \
+                 "• Хочешь начать поиск человека? Выбери *\"Начать поиск\"*\n\n" \
+                 f"• Хочешь поменять свой статус? Выбери *\"Изменить статус\"*\n"
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        buttons = ["Команды", "Начать поиск", "Изменить статус"]
+        keyboard.add(*buttons)
+        bot.send_message(message.from_user.id, result, parse_mode='Markdown', reply_markup=keyboard)
+    elif splited_text[0] == "Начать" and splited_text[1] == "поиск" and len(splited_text) == 2 or (splited_text[0] == "/find" and len(splited_text) == 1):
         userClass.condition = "enteringKeywords"
         result = "Введи ключевые слова через запятую, по которым хочешь осуществить поиск"
-        bot.send_message(message.from_user.id, result, parse_mode='Markdown')
-    elif splited_text[0] == "/changeStatus" and len(splited_text) == 1:
+        bot.send_message(message.from_user.id, result, parse_mode='Markdown', reply_markup=types.ReplyKeyboardRemove())
+    elif (splited_text[0] == "Изменить" and splited_text[1] == "статус" and len(splited_text) == 2) or (splited_text[0] == "/changeStatus" and len(splited_text) == 1):
         if userClass.status == "default":
             userClass.status = "prime"
             now_status = "Премиум"
@@ -128,8 +144,17 @@ def send_welcome(message):
             userClass.status = "default"
             now_status = "Обычный"
         result = 'Ты поменял свой статус на *"{}"*'.format(now_status)
-        bot.send_message(message.from_user.id, result, parse_mode='Markdown')
-
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        buttons = ["Команды", "Начать поиск"]
+        keyboard.add(*buttons)
+        bot.send_message(message.from_user.id, result, parse_mode='Markdown', reply_markup=keyboard)
+    elif splited_text[0].lower() in ["каптча", "капча"]:
+        try:
+            captcha = splited_text[1]
+            with open("captcha.txt", "w") as file:
+                file.write(captcha)
+        except IndexError:
+            captcha = None
     else:
         result = "Извини, я вряд ли могу как-то ответить тебе🙁"
         if userClass.condition == "enteringKeywords":
@@ -142,6 +167,7 @@ def send_welcome(message):
             else:
                 result = "Осталось только отправить мне ссылку на страницу ВК, откуда начнешь поиск."
                 userClass.condition = "enteringId"
+            bot.send_message(message.from_user.id, result, parse_mode='Markdown', reply_markup=types.ReplyKeyboardRemove())
         elif userClass.condition == "addingKeywords":
             if text.lower() != "нет":
                 for word in text.lower().split(";"):
@@ -150,6 +176,7 @@ def send_welcome(message):
 
             result = "Осталось только отправить мне ссылку на страницу ВК, откуда начнешь поиск."
             userClass.condition = "enteringId"
+            bot.send_message(message.from_user.id, result, parse_mode='Markdown', reply_markup=types.ReplyKeyboardRemove())
         elif userClass.condition == "enteringId":
             result = "Ты добавлен в очередь. Загляни сюда позже"
             t = time.time()
@@ -157,12 +184,14 @@ def send_welcome(message):
                                   text)
             userClass.condition = "chatting"
 
-        bot.send_message(message.from_user.id, result, parse_mode='Markdown')
-        # print(message.reply_to_message)
-        # print("---------------")
+            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            buttons = ["Команды", "Начать поиск", "Изменить статус"]
+            keyboard.add(*buttons)
+            bot.send_message(message.from_user.id, result, parse_mode='Markdown', reply_markup=keyboard)
+        else:
+            bot.send_message(message.from_user.id, result, parse_mode='Markdown')
 
     tgUsers[userClass.id] = {"status": userClass.status, "condition": userClass.condition, "keywords": userClass.keywords}
-    # print(userClass.keywords)
     writeFile()
 
 

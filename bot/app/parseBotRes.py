@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 # vim:fileencoding=utf-8
 import csv
+import time
+
+from telegram_bot import *
 from ParsingVkApiRelis import *
 
 with open("settings.txt") as file:
@@ -11,8 +14,47 @@ with open("settings.txt") as file:
     depths = list(map(int, data[3].strip().split(',')))
     # depths = data[3].strip().split(',')
     counters = list(map(int, data[4].strip().split(',')))
+    admins = list(map(int, data[5].strip().split(',')))
 
-vkBot = VKparserBot(login=LOGIN, password=PASSWORD)
+with open("captcha.txt", "w") as file:
+    pass
+
+
+# Инициализация бота
+s_id = False
+code = False
+flag = True
+while flag:
+    try:
+        vkBot = VKparserBot(login=LOGIN, password=PASSWORD)
+        flag = False
+
+    #    break
+    except vk_api.exceptions.Captcha as captcha:
+        s_id = captcha.sid  # Получение sid
+        # print(captcha.get_url())  # Получить ссылку на изображение капчи
+        enter_captcha([501787500], str(captcha.get_url()))
+        # captcha.get_image()  # Получить изображение капчи (jpg)
+        # choose = input()
+        while True:
+            with open("captcha.txt", "r") as file:
+                data = file.readlines()
+                entered_captcha = "qq"
+                if len(data) != 0:
+                    entered_captcha = data[0]
+                    break
+
+        # vkBot = VKparserBot(login=LOGIN, password=PASSWORD)
+        try:
+            with open("captcha.txt", "w") as file:
+                pass
+            vkBot = captcha.try_again(key=entered_captcha)
+            vkBot = VKparserBot(login=LOGIN, password=PASSWORD)
+            flag = False
+        except vk_api.exceptions.Captcha:
+            pass
+
+# vkBot = VKparserBot(login=LOGIN, password=PASSWORD)
 wfh = wordFindHelper()
 depth_depends_on_the_status = {"default": depths[0], "prime": depths[1], "superPrime": depths[2]}
 count_of_friends = {"default": counters[0], "prime": counters[1], "superPrime": counters[2]}
@@ -31,30 +73,42 @@ def service(users_list, user_status):
                 vk_user_id = vkBot.vk.utils.resolveScreenName(
                     screen_name=link.replace("https://vk.com/", "", 1).replace("vk.com/", "", 1))
                 if vk_user_id["type"] == "user":
+                    vkBot.prepareForParsing()
+                    vkBot.start_user_id = vk_user_id["object_id"]
+                    if not vkBot.checkIsStartAccountClosed():
+                        # аккаунт удален или приватный
+                        with open("resultQueue.csv", "a", newline='') as file:
+                            writer = csv.writer(file)
+                            writer.writerow([el[0], tg_id, "PRIVATE_USER_ERROR"])
                     vkBot.findUserFriends(user_id=vk_user_id["object_id"], counter=0, depth=depth, keywords=keywords)
                     result = []
                     for vkItEl in vkBot.result_users.items():
-                        result.append((vkItEl[0], vkItEl[1]["count"]))
+                        result.append((vkItEl[0], vkItEl[1]["count"], vkItEl[1]["first_name"], vkItEl[1]["last_name"]))
                     with open("resultQueue.csv", "a", newline='') as file:
                         writer = csv.writer(file)
                         res = ""
                         result.sort(key=lambda x: -x[1])
                         how_many_friends = count_of_friends[user_status]
-                        # result = [(int(<vk_group1_id>), <int(number_of_matches_in_group1)>), 
+                        # result = [(int(<vk_group1_id>), <int(number_of_matches_in_group1)>),
                         #           (int(<vk_group2_id>), <int(number_of_matches_in_group2)>), ...]
                         for resEl in result:
                             if how_many_friends > 0:
-                                res += str(resEl[0]) + "-" + str(resEl[1]) + ";"
+                                res += str(resEl[0]) + "-" + str(resEl[1]) + "-" + str(resEl[2]) + "-" + str(resEl[3]) + ";"
                                 how_many_friends -= 1
                             else:
                                 break
-                        # print([el[0], tg_id, user_status, res[:-1]])
                         writer.writerow([el[0], tg_id, user_status, res[:-1]])
-                    # print("result_users:", vkBot.result_users)
-                    # return vk_user_id["object_id"]
                 else:
-                    # print("Ты ввел ссылку не на пользователя Вконтакте\n[Type = {}]".format(vk_user_id["type"]))
-                    pass
+                    # Ссылка не на пользователя ВК
+                    with open("resultQueue.csv", "a", newline='') as file:
+                        writer = csv.writer(file)
+                        writer.writerow([el[0], tg_id, "NOT_USER_ERROR"])
+            else:
+                # Ссылка не на ВК
+                with open("resultQueue.csv", "a", newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow([el[0], tg_id, "NOT_VK_ERROR"])
+
 
 
 def readQueue():
@@ -106,7 +160,6 @@ if __name__ == "__main__":
             users_list = sorted(list(users["prime"].items()), key=lambda x: x[0])
             while len(users_list) > 0:
                 service(users_list, "prime")
-                # print(1, service(users_list, "prime"))
                 del users["prime"][users_list[0][0]]
                 try:
                     del users_list[0]
@@ -117,7 +170,6 @@ if __name__ == "__main__":
             users_list = sorted(list(users["default"].items()), key=lambda x: x[0])
             while len(users_list) > 0:
                 service(users_list, "default")
-                # print(0, service(users_list, "default"))
                 del users["default"][users_list[0][0]]
                 try:
                     del users_list[0]
